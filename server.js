@@ -115,9 +115,12 @@ app.put('/api/events/:id', (req, res) => {
       type: type !== undefined ? type : data.events[index].type,
       start: start !== undefined ? start : data.events[index].start
     };
-    if (type === 'range' && end) {
-      updatedEvent.end = end;
+    // Handle end date based on type
+    if (updatedEvent.type === 'range') {
+      updatedEvent.end = end !== undefined ? end : data.events[index].end;
     }
+    // If type is 'point', don't include end field
+    
     data.events[index] = updatedEvent;
     if (writeData(data)) {
       res.json({ success: true, event: updatedEvent });
