@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 
@@ -10,7 +9,7 @@ const DATA_FILE = path.join(__dirname, 'data.json');
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(express.static('public'));
 
 // Initialize data file if it doesn't exist
@@ -154,8 +153,11 @@ app.get('/api/categories', (req, res) => {
 
 // Add new category
 app.post('/api/categories', (req, res) => {
-  const data = readData();
   const newCategory = req.body.name;
+  if (!newCategory || typeof newCategory !== 'string' || newCategory.trim() === '') {
+    return res.status(400).json({ success: false, error: 'Category name is required' });
+  }
+  const data = readData();
   if (!data.categories.includes(newCategory)) {
     data.categories.push(newCategory);
     if (writeData(data)) {
