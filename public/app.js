@@ -23,6 +23,9 @@ async function init() {
 async function loadUser() {
     try {
         const response = await fetch(`${API_BASE}/user`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         currentUser = await response.json();
         if (currentUser.name) {
             document.getElementById('user-name').value = currentUser.name;
@@ -43,11 +46,16 @@ async function saveUser(userData) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
         });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const result = await response.json();
         if (result.success) {
             currentUser = result.user;
             updateTimelineRange();
             alert('Profile saved successfully!');
+        } else {
+            alert(result.error || 'Error saving profile');
         }
     } catch (error) {
         console.error('Error saving user:', error);
@@ -59,6 +67,9 @@ async function saveUser(userData) {
 async function loadCategories() {
     try {
         const response = await fetch(`${API_BASE}/categories`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         categories = await response.json();
         updateCategorySelect();
         categories.forEach(cat => visibleCategories.add(cat));
@@ -71,6 +82,9 @@ async function loadCategories() {
 async function loadEvents() {
     try {
         const response = await fetch(`${API_BASE}/events`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         allEvents = await response.json();
         updateTimelineItems();
     } catch (error) {
@@ -88,11 +102,16 @@ async function saveEvent(eventData) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(eventData)
         });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const result = await response.json();
         if (result.success) {
             await loadEvents();
             clearEventForm();
             alert('Event saved successfully!');
+        } else {
+            alert(result.error || 'Error saving event');
         }
     } catch (error) {
         console.error('Error saving event:', error);
@@ -109,11 +128,16 @@ async function deleteEvent(eventId) {
         const response = await fetch(`${API_BASE}/events/${eventId}`, {
             method: 'DELETE'
         });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const result = await response.json();
         if (result.success) {
             await loadEvents();
             clearEventForm();
             alert('Event deleted successfully!');
+        } else {
+            alert(result.error || 'Error deleting event');
         }
     } catch (error) {
         console.error('Error deleting event:', error);

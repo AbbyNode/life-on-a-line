@@ -57,8 +57,12 @@ app.get('/api/user', (req, res) => {
 
 // Update user profile
 app.post('/api/user', (req, res) => {
+  const { name, birthdate } = req.body;
+  if (!name || !birthdate) {
+    return res.status(400).json({ success: false, error: 'Name and birthdate are required' });
+  }
   const data = readData();
-  data.user = req.body;
+  data.user = { name, birthdate };
   if (writeData(data)) {
     res.json({ success: true, user: data.user });
   } else {
@@ -74,11 +78,22 @@ app.get('/api/events', (req, res) => {
 
 // Add new event
 app.post('/api/events', (req, res) => {
+  const { title, description, category, type, start, end } = req.body;
+  if (!title || !category || !type || !start) {
+    return res.status(400).json({ success: false, error: 'Title, category, type, and start date are required' });
+  }
   const data = readData();
   const newEvent = {
     id: Date.now().toString(),
-    ...req.body
+    title,
+    description: description || '',
+    category,
+    type,
+    start
   };
+  if (type === 'range' && end) {
+    newEvent.end = end;
+  }
   data.events.push(newEvent);
   if (writeData(data)) {
     res.json({ success: true, event: newEvent });
@@ -89,12 +104,24 @@ app.post('/api/events', (req, res) => {
 
 // Update event
 app.put('/api/events/:id', (req, res) => {
+  const { title, description, category, type, start, end } = req.body;
   const data = readData();
   const index = data.events.findIndex(e => e.id === req.params.id);
   if (index !== -1) {
-    data.events[index] = { ...data.events[index], ...req.body };
+    const updatedEvent = {
+      id: data.events[index].id,
+      title: title !== undefined ? title : data.events[index].title,
+      description: description !== undefined ? description : data.events[index].description,
+      category: category !== undefined ? category : data.events[index].category,
+      type: type !== undefined ? type : data.events[index].type,
+      start: start !== undefined ? start : data.events[index].start
+    };
+    if (type === 'range' && end) {
+      updatedEvent.end = end;
+    }
+    data.events[index] = updatedEvent;
     if (writeData(data)) {
-      res.json({ success: true, event: data.events[index] });
+      res.json({ success: true, event: updatedEvent });
     } else {
       res.status(500).json({ success: false, error: 'Failed to update event' });
     }
