@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Timeline</title>
+    <link href="/vis-timeline/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Life on a Line</h1>
+            <p class="subtitle">Visualize your personal life timeline</p>
+        </header>
+
+        <!-- User Profile Section -->
+        <section id="profile-section" class="card">
+            <h2>Your Profile</h2>
+            <form id="profile-form">
+                <div class="form-group">
+                    <label for="user-name">Name:</label>
+                    <input type="text" id="user-name" required placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label for="birthdate">Birth Date:</label>
+                    <input type="date" id="birthdate" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Profile</button>
+            </form>
+        </section>
+
+        <!-- Category Filter Section -->
+        <section id="filter-section" class="card">
+            <h3>Filter by Category</h3>
+            <div id="category-filters" class="category-filters"></div>
+        </section>
+
+        <!-- Timeline Section -->
+        <section id="timeline-section" class="card">
+            <div class="timeline-controls">
+                <h2>Timeline</h2>
+                <div class="control-buttons">
+                    <button id="zoom-in" class="btn btn-small">Zoom In</button>
+                    <button id="zoom-out" class="btn btn-small">Zoom Out</button>
+                    <button id="fit-timeline" class="btn btn-small">Fit All</button>
+                </div>
+            </div>
+            <div id="timeline"></div>
+        </section>
+
+        <!-- Event Form Section -->
+        <section id="event-section" class="card">
+            <h3>Add/Edit Event</h3>
+            <form id="event-form">
+                <input type="hidden" id="event-id">
+                <div class="form-group">
+                    <label for="event-title">Event Title:</label>
+                    <input type="text" id="event-title" required placeholder="Event name">
+                </div>
+                <div class="form-group">
+                    <label for="event-description">Description:</label>
+                    <textarea id="event-description" rows="3" placeholder="Event description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="event-category">Category:</label>
+                    <select id="event-category" required>
+                        <option value="">Select category</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="event-type">Event Type:</label>
+                    <select id="event-type" required>
+                        <option value="point">Point in time</option>
+                        <option value="range">Time span</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="event-start">Start Date:</label>
+                    <input type="date" id="event-start" required>
+                </div>
+                <div class="form-group" id="end-date-group" style="display: none;">
+                    <label for="event-end">End Date:</label>
+                    <input type="date" id="event-end">
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary">Save Event</button>
+                    <button type="button" id="delete-event" class="btn btn-danger" style="display: none;">Delete Event</button>
+                    <button type="button" id="cancel-event" class="btn btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <script src="/vis-timeline/vis-timeline-graph2d.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
