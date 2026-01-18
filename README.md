@@ -14,6 +14,31 @@ A web application for visualizing your personal life timeline with events at spe
 
 ## Installation
 
+### Option 1: Using Docker Compose (Recommended)
+
+1. Clone the repository:
+```bash
+git clone https://github.com/AbbyNode/life-on-a-line.git
+cd life-on-a-line
+```
+
+2. Start the application using Docker Compose:
+```bash
+docker-compose up
+```
+
+3. Open your browser and navigate to:
+```
+http://localhost:3000
+```
+
+To stop the application:
+```bash
+docker-compose down
+```
+
+### Option 2: Manual Installation
+
 1. Clone the repository:
 ```bash
 git clone https://github.com/AbbyNode/life-on-a-line.git
