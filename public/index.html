@@ -41,12 +41,16 @@
             <div class="timeline-controls">
                 <h2>Timeline</h2>
                 <div class="control-buttons">
+                    <button id="toggle-orientation" class="btn btn-small" aria-label="Toggle between horizontal and vertical timeline view">
+                        <span id="orientation-icon">↔</span> <span id="orientation-label">Horizontal</span>
+                    </button>
                     <button id="zoom-in" class="btn btn-small" aria-label="Zoom in to see more detail">Zoom In</button>
                     <button id="zoom-out" class="btn btn-small" aria-label="Zoom out to see broader view">Zoom Out</button>
                     <button id="fit-timeline" class="btn btn-small" aria-label="Fit all events in view">Fit All</button>
                 </div>
             </div>
             <div id="timeline"></div>
+            <div id="vertical-timeline" class="vertical-timeline" style="display: none;"></div>
         </section>
 
         <!-- Event Form Section -->
