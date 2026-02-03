@@ -5,9 +5,37 @@ let currentUser = { name: '', birthdate: '' };
 let allEvents = [];
 let categories = [];
 let visibleCategories = new Set();
+let isVerticalView = false;
+
+// Constants for localStorage
+const STORAGE_KEY_ORIENTATION = 'timeline-orientation';
 
 // API Base URL
 const API_BASE = '/api';
+
+// Detect if device is mobile
+function isMobileDevice() {
+    return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// Get default orientation based on device
+function getDefaultOrientation() {
+    return isMobileDevice() ? 'vertical' : 'horizontal';
+}
+
+// Load saved orientation or use default
+function loadOrientationPreference() {
+    const saved = localStorage.getItem(STORAGE_KEY_ORIENTATION);
+    if (saved === 'vertical' || saved === 'horizontal') {
+        return saved;
+    }
+    return getDefaultOrientation();
+}
+
+// Save orientation preference
+function saveOrientationPreference(orientation) {
+    localStorage.setItem(STORAGE_KEY_ORIENTATION, orientation);
+}
 
 // Initialize the application
 async function init() {
@@ -17,6 +45,11 @@ async function init() {
     initTimeline();
     setupEventListeners();
     updateCategoryFilters();
+    
+    // Initialize orientation based on saved preference or device default
+    const savedOrientation = loadOrientationPreference();
+    isVerticalView = savedOrientation === 'vertical';
+    applyOrientation();
 }
 
 // Load user profile
@@ -87,6 +120,9 @@ async function loadEvents() {
         }
         allEvents = await response.json();
         updateTimelineItems();
+        if (isVerticalView) {
+            renderVerticalTimeline();
+        }
     } catch (error) {
         console.error('Error loading events:', error);
     }
@@ -272,6 +308,121 @@ function toggleCategory(category) {
     }
     updateCategoryFilters();
     updateTimelineItems();
+    if (isVerticalView) {
+        renderVerticalTimeline();
+    }
+}
+
+// Toggle between horizontal and vertical view
+function toggleOrientation() {
+    isVerticalView = !isVerticalView;
+    saveOrientationPreference(isVerticalView ? 'vertical' : 'horizontal');
+    applyOrientation();
+}
+
+// Apply the current orientation
+function applyOrientation() {
+    const horizontalTimeline = document.getElementById('timeline');
+    const verticalTimeline = document.getElementById('vertical-timeline');
+    const toggleBtn = document.getElementById('toggle-orientation');
+    const orientationIcon = document.getElementById('orientation-icon');
+    const orientationLabel = document.getElementById('orientation-label');
+    const timelineSection = document.getElementById('timeline-section');
+    
+    if (isVerticalView) {
+        horizontalTimeline.style.display = 'none';
+        verticalTimeline.style.display = 'block';
+        toggleBtn.classList.add('vertical-active');
+        orientationIcon.textContent = '↕';
+        orientationLabel.textContent = 'Vertical';
+        timelineSection.classList.add('vertical-mode');
+        renderVerticalTimeline();
+    } else {
+        horizontalTimeline.style.display = 'block';
+        verticalTimeline.style.display = 'none';
+        toggleBtn.classList.remove('vertical-active');
+        orientationIcon.textContent = '↔';
+        orientationLabel.textContent = 'Horizontal';
+        timelineSection.classList.remove('vertical-mode');
+        if (timeline) {
+            timeline.redraw();
+        }
+    }
+}
+
+// Render vertical timeline
+function renderVerticalTimeline() {
+    const container = document.getElementById('vertical-timeline');
+    
+    // Filter events based on visible categories
+    const filteredEvents = allEvents.filter(event => 
+        visibleCategories.has(event.category)
+    );
+    
+    // Sort events by start date (newest first)
+    const sortedEvents = [...filteredEvents].sort((a, b) => 
+        new Date(b.start) - new Date(a.start)
+    );
+    
+    if (sortedEvents.length === 0) {
+        container.innerHTML = '<div class="vertical-timeline-empty">No events to display. Add some events or adjust your category filters.</div>';
+        return;
+    }
+    
+    container.innerHTML = sortedEvents.map(event => {
+        const startDate = new Date(event.start);
+        const categoryClass = `category-${event.category.replace(/\s+/g, '-')}`;
+        
+        let dateStr = startDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        
+        if (event.type === 'range' && event.end) {
+            const endDate = new Date(event.end);
+            dateStr += ' - ' + endDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+        
+        return `
+            <div class="vertical-timeline-item" data-event-id="${event.id}">
+                <div class="vertical-timeline-content ${categoryClass}">
+                    <div class="vertical-timeline-date">${dateStr}</div>
+                    <div class="vertical-timeline-title">${escapeHtml(event.title)}</div>
+                    <span class="vertical-timeline-category">${escapeHtml(event.category)}</span>
+                    ${event.description ? `<div class="vertical-timeline-description">${escapeHtml(event.description)}</div>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Add click handlers for selecting events
+    container.querySelectorAll('.vertical-timeline-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const eventId = item.getAttribute('data-event-id');
+            const event = allEvents.find(e => e.id === eventId);
+            if (event) {
+                // Remove selection from all items
+                container.querySelectorAll('.vertical-timeline-content').forEach(content => {
+                    content.classList.remove('selected');
+                });
+                // Add selection to clicked item
+                item.querySelector('.vertical-timeline-content').classList.add('selected');
+                loadEventToForm(event);
+            }
+        });
+    });
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // Load event data to form
@@ -305,6 +456,10 @@ function clearEventForm() {
     if (timeline) {
         timeline.setSelection([]);
     }
+    // Clear selection in vertical timeline
+    document.querySelectorAll('.vertical-timeline-content.selected').forEach(content => {
+        content.classList.remove('selected');
+    });
 }
 
 // Setup event listeners
@@ -366,6 +521,10 @@ function setupEventListeners() {
     });
     
     // Timeline controls
+    document.getElementById('toggle-orientation').addEventListener('click', () => {
+        toggleOrientation();
+    });
+    
     document.getElementById('zoom-in').addEventListener('click', () => {
         timeline.zoomIn(0.5);
     });
@@ -376,6 +535,13 @@ function setupEventListeners() {
     
     document.getElementById('fit-timeline').addEventListener('click', () => {
         timeline.fit();
+    });
+    
+    // Handle window resize to potentially update orientation on device change
+    window.addEventListener('resize', () => {
+        if (isVerticalView) {
+            renderVerticalTimeline();
+        }
     });
 }
 
