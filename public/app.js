@@ -13,9 +13,9 @@ const STORAGE_KEY_ORIENTATION = 'timeline-orientation';
 // API Base URL
 const API_BASE = '/api';
 
-// Detect if device is mobile
+// Detect if device is mobile based on viewport width
 function isMobileDevice() {
-    return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    return window.innerWidth <= 768;
 }
 
 // Get default orientation based on device
